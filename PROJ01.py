@@ -12,11 +12,16 @@ import sys
 import re           #regular expression lib for string searches!
 import socket
 
+# from process_image import process_image
+from blackjack_pi import BlackjackPi
+
 #set up your GCP credentials - replace the " " in the following line with your .json file and path
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/home/pi/DET-2019-d3b82e6383ae.json"
 
 # this line connects to Google Cloud Vision! 
 client = vision.ImageAnnotatorClient()
+
+blackjack = BlackjackPi()
 
 # global variable for our image file - to be captured soon!
 image = 'image.jpg'
@@ -24,16 +29,17 @@ image = 'image.jpg'
 def takephoto(camera):
 # status: TESTED    
     # this triggers an on-screen preview, so you know what you're photographing!
-    camera.start_preview() 
+#    camera.start_preview() 
     sleep(.5)                   #give it a pause so you can adjust if needed
     camera.capture('image.jpg') #save the image
     crop('image.jpg', (0,0,1920,540), 'dealer_image.jpg')
     crop('image.jpg', (0,540,1920,1080), 'player_image.jpg')
-    camera.stop_preview()       #stop the preview
+#    camera.stop_preview()       #stop the preview
 
 def crop(image, coords, new_image):
 # status: TESTED
     image_obj = Image.open(image)
+#    image_obj = image_obj.rotate(90)
     cropped_image = image_obj.crop(coords)
     cropped_image.save(new_image)
     cropped_image.show()
@@ -175,14 +181,23 @@ def dealer_turn(dealer_hand):
 def bet_low():
     # do some stuff for a low bet
     print("Spitting out min bet")
+    crickit.continuous_servo_1.throttle = 1.0
+    time.sleep(3)
+    crickit.continuous_servo_1.throttle = 0.0
 
 def bet_medium():
     # do some stuff for a "normal" bet
     print("Betting normally")
+    crickit.continuous_servo_2.throttle = 1.0
+    time.sleep(3)
+    crickit.continuous_servo_2.throttle = 0.0
     
 def bet_high():
     # do some stuff for a high bet
     print("BETTING LOTS OF MONEY")
+    crickit.continuous_servo_2.throttle = 1.0
+    time.sleep(6)
+    crickit.continuous_servo_2.throttle = 0.0
     
 def won_round():
     # do some stuff if player won (or if there's a standoff)
@@ -192,26 +207,32 @@ def lost_round():
     # do some stuff if player goes bust or loses
     print("I lost")
     
-def hit():
-    # do some stuff if player wants to hit
-    print("GIVE ME A CARD")
-    
 def stand():
-    # do some stuff if player wants to stand
-    print("I don't want a card")
+    # tap left hand (fist) 3 times for a stand
+    print("I stand. No more cards")
+    for i in range(3):
+        crickit.servo_3.angle = 90
+        time.sleep(0.2)
+        crickit.servo_3.angle = 0
+        time.sleep(0.2)
+    
+def hit():
+    # tap right hand 3 times for a hit
+    print("I hit. Give me card.")
+    for i in range(3):
+        crickit.servo_4.angle = 90
+        time.sleep(0.2)
+        crickit.servo_4.angle = 180
+        time.sleep(0.2)
     
 def main():
-# assumptions:
-# - a player can only hit or stand
-# - there's no such thing as a soft hand
 
     camera = picamera.PiCamera()   #generate a camera object
-    
-    count = 0 # card count for determining what bet to place 
-
+    takephoto(camera)    
+    count = 0 # card count for determining what bet to place
     while True:
-
         if crickit.touch_1.value==1: # cap touch indicates that a round has been dealt
+            [player_hand, dealer_hand] = capture_initial_hands(camera)
             print("Place your bet")
             # place a bet depending on the card count.
             # TO-DO: FIX THIS!
@@ -256,8 +277,6 @@ def main():
                             
             # updating count should be the last thing done in the round
             count = count_cards(count, player_hand + dealer_hand)
-            
-
 
     
 if __name__ == '__main__':
