@@ -113,7 +113,7 @@ def capture_new_card(camera, old_hand, player, image = image):
             #read the image file
             content = image_file.read()
             #convert the image file to a GCP Vision-friendly type
-            new_hand = detect_hand(vision.types.Image(content=content)
+            new_hand = detect_hand(vision.types.Image(content=content))
     
     for card in new_hand:
         if card not in old_hand:

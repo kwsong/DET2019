@@ -18,12 +18,12 @@ def filter_image(image):
 
     img = cv2.imread(image, 0)
 
-    img = cv2.fastNlMeansDenoising(img, None, 20, 7, 21)
+#    img = cv2.fastNlMeansDenoising(img, None, 20, 7, 21)
     img = cv2.medianBlur(img, 5)
     img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                 cv2.THRESH_BINARY_INV, 7, 2)
 
-    img = cv2.resize(img, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+#    img = cv2.resize(img, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
 
     cv2.imwrite(image, img)
 
