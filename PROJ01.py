@@ -126,28 +126,35 @@ def act_bet_low():
     crickit.continuous_servo_1.throttle = 1.0
     time.sleep(3)
     crickit.continuous_servo_1.throttle = 0.0
-
-def act_bet_medium():
-    # do some stuff for a "normal" bet
-    print("Betting normally")
-    crickit.continuous_servo_2.throttle = 1.0
-    time.sleep(3)
-    crickit.continuous_servo_2.throttle = 0.0
     
 def act_bet_high():
     # do some stuff for a high bet
     print("BETTING LOTS OF MONEY")
     crickit.continuous_servo_2.throttle = 1.0
-    time.sleep(6)
+    time.sleep(3)
     crickit.continuous_servo_2.throttle = 0.0
     
 def act_won():
     # do some stuff if player won (or if there's a standoff)
     print("I won")
+    for i in range(3):
+        crickit.servo_3.angle = 90
+        crickit.servo_4.angle = 180
+        time.sleep(0.1)
+        crickit.servo_3.angle = 0
+        time.sleep(0.1)
+        crickit.servo_4.angle = 90
+        time.sleep(0.1)
     
 def act_lost():
     # do some stuff if player goes bust or loses
+    # throws away money?
     print("I lost")
+    crickit.continuous_servo_2.throttle = 1.0
+    crickit.continuous_servo_1.throttle = 1.0
+    time.sleep(6)
+    crickit.continuous_servo_2.throttle = 0.0
+    crickit.continuous_servo_1.throttle = 0.0
     
 def act_stand():
     # tap left hand (fist) 3 times for a stand
@@ -174,7 +181,7 @@ def dealer_turn(dealer_hand):
     # The dealer draws cards until the sum >= 17
     while dealer_total < 17:
         print("Dealer needs a new card")
-        time.sleep(3)
+        time.sleep(5)
 
         new_card = capture_new_card(camera, dealer_hand, 0)
         
@@ -204,9 +211,9 @@ def main():
             # keep hitting if relevant
             while blackjack.best_move() == 'hit' and not blackjack.did_bust(1):
                 act_hit()
-                time.sleep(3) # wait 3 seconds for card to be dealt
+                time.sleep(5) # wait 5 seconds for card to be dealt
 
-                added_card = capture_new_card(camera, player_hand, 1, image)
+                added_card = capture_new_card(camera, player_hand, 1)
                 blackjack.add_player_card(added_card)
                 player_hand.append(added_card)
                 player_total, dealer_total = blackjack.get_totals()
