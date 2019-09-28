@@ -26,10 +26,10 @@ class BlackjackPi:
     player_blackjack = False
     dealer_blackjack = False
 
-    def deal_cards(self, player_hand, dealer_card):
+    def deal_cards(self, player_hand, dealer_hand):
 
-        self.player_hand = [player_hand]
-        self.dealer_hand = [dealer_card]
+        self.player_hand = player_hand
+        self.dealer_hand = dealer_hand
 
         self.player_total = 0
         self.player_soft_total = 0
