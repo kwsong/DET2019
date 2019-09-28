@@ -28,7 +28,7 @@ class BlackjackPi:
 
     def deal_cards(self, player_hand, dealer_card):
 
-        self.player_hand = player_hand
+        self.player_hand = [player_hand]
         self.dealer_hand = [dealer_card]
 
         self.player_total = 0

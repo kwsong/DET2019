@@ -44,9 +44,9 @@ def crop_image(image):
 
     top_bbox = (img_bbox[0], img_bbox[1], img_bbox[2], img_bbox[3] / 2)
     bottom_bbox = (img_bbox[0], img_bbox[3] / 2, img_bbox[2], img_bbox[3])
+
     top_img = img.crop(top_bbox)
     bottom_img = img.crop(bottom_bbox)
-
     top_image_name = f"{image.rsplit('.')[0]}_top.jpg"
     top_img.save(top_image_name)
 

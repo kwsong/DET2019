@@ -12,7 +12,7 @@ import sys
 import re           #regular expression lib for string searches!
 import socket
 
-# from process_image import process_image
+from process_image import process_image
 from blackjack_pi import BlackjackPi
 
 #set up your GCP credentials - replace the " " in the following line with your .json file and path
@@ -32,8 +32,8 @@ def takephoto(camera):
 #    camera.start_preview() 
     sleep(.5)                   #give it a pause so you can adjust if needed
     camera.capture('image.jpg') #save the image
-    crop('image.jpg', (0,0,1920,540), 'dealer_image.jpg')
-    crop('image.jpg', (0,540,1920,1080), 'player_image.jpg')
+#    crop('image.jpg', (0,0,1920,540), 'dealer_image.jpg')
+#    crop('image.jpg', (0,540,1920,1080), 'player_image.jpg')
 #    camera.stop_preview()       #stop the preview
 
 def crop(image, coords, new_image):
@@ -45,20 +45,33 @@ def crop(image, coords, new_image):
     cropped_image.show()
     
 def detect_hand(image):
-# status: TESTED
-    """Detects hand of cards in the image."""
-    validCards = ['A','K','Q','J','10','9','8','7','6','5','4','3','2']
+    """Takes an image and uses GCV to detect valid cards in the image
+
+    Arguments:
+        image {Image} -- a GCV friendly image type
+
+    Returns:
+        [str] -- array of cards in hand
+    """
+
+    validCards = ['A', 'K', 'Q', 'J', '10',
+                  '9', '8', '7', '6', '5', '4', '3', '2']
     hand = []
-    
-    response = client.text_detection(image=image)
+
+#    context = vision.types.ImageContext(language_hints="en-t-i0-plain")
+    response = client.text_detection(image = image)
+ #   response = client.text_detection(
+ #       image=image, image_context=context)
     texts = response.text_annotations
 
     for text in texts:
-        if text.description in validCards:
-            hand.append(text.description)
-            
-    return hand
+        letter = text.description
+        print(letter)
+        if letter in validCards:
+            hand.append(letter)
 
+    return hand
+'''
 def capture_initial_hands(camera):
 # status: TESTED
     player_hand = []
@@ -134,7 +147,8 @@ def count_cards(count, new_cards):
         elif card == '10' or card == 'J' or card == 'Q' or card == 'K' or card == 'A':
             count -= 1
     return count
-
+    '''
+'''
 def hit_or_stand(player_hand, dealer_hand):
 # status: UNTESTED
 # return True if player should hit
@@ -160,7 +174,8 @@ def hit_or_stand(player_hand, dealer_hand):
     
     else:
         return False
-
+        '''
+'''
 def dealer_turn(dealer_hand):
 # status: UNTESTED
 # return the final dealer_hand
@@ -177,37 +192,37 @@ def dealer_turn(dealer_hand):
         time.sleep(1)
         
     return dealer_hand   
-
-def bet_low():
+'''
+def act_bet_low():
     # do some stuff for a low bet
     print("Spitting out min bet")
     crickit.continuous_servo_1.throttle = 1.0
     time.sleep(3)
     crickit.continuous_servo_1.throttle = 0.0
 
-def bet_medium():
+def act_bet_medium():
     # do some stuff for a "normal" bet
     print("Betting normally")
     crickit.continuous_servo_2.throttle = 1.0
     time.sleep(3)
     crickit.continuous_servo_2.throttle = 0.0
     
-def bet_high():
+def act_bet_high():
     # do some stuff for a high bet
     print("BETTING LOTS OF MONEY")
     crickit.continuous_servo_2.throttle = 1.0
     time.sleep(6)
     crickit.continuous_servo_2.throttle = 0.0
     
-def won_round():
+def act_won():
     # do some stuff if player won (or if there's a standoff)
     print("I won")
     
-def lost_round():
+def act_lost():
     # do some stuff if player goes bust or loses
     print("I lost")
     
-def stand():
+def act_stand():
     # tap left hand (fist) 3 times for a stand
     print("I stand. No more cards")
     for i in range(3):
@@ -216,7 +231,7 @@ def stand():
         crickit.servo_3.angle = 0
         time.sleep(0.2)
     
-def hit():
+def act_hit():
     # tap right hand 3 times for a hit
     print("I hit. Give me card.")
     for i in range(3):
@@ -228,8 +243,35 @@ def hit():
 def main():
 
     camera = picamera.PiCamera()   #generate a camera object
-    takephoto(camera)    
-    count = 0 # card count for determining what bet to place
+    takephoto(camera)
+
+    
+    global image
+
+    dealer_image, player_image, processed_image = process_image(image)
+
+    with open(dealer_image, 'rb') as image_file:
+        content = image_file.read()
+
+    dealer_hand = detect_hand(vision.types.Image(content=content))
+    print("Dealer hand: ")
+    for card in dealer_hand:
+        print(card)
+        print("Number of dealer cards: " + str(len(dealer_hand)))
+
+    with open(player_image, 'rb') as image_file:
+        content = image_file.read()
+
+    player_hand = detect_hand(vision.types.Image(content=content))
+    print("Player hand: ")
+    for card in player_hand:
+        print(card)
+        print("Number of player cards: " + str(len(player_hand)))
+
+    blackjack.deal_cards(player_hand, dealer_hand)
+
+    print(blackjack.best_bet(), blackjack.best_move())
+'''    
     while True:
         if crickit.touch_1.value==1: # cap touch indicates that a round has been dealt
             [player_hand, dealer_hand] = capture_initial_hands(camera)
@@ -277,7 +319,7 @@ def main():
                             
             # updating count should be the last thing done in the round
             count = count_cards(count, player_hand + dealer_hand)
-
+'''
     
 if __name__ == '__main__':
         main()    
