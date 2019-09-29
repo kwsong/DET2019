@@ -98,7 +98,7 @@ def capture_new_card(camera, old_hand, player, image = image):
 # call this upon a hit to tell what the new card/hand is
 # player should be 1 if player, 0 if dealer
     new_hand = []
-    
+    new_card = ''
     # Keep taking pictures if the correct number of cards isn't detected
     while len(new_hand) is not (len(old_hand)+1):
         takephoto(camera) # Capture a picture
@@ -118,6 +118,10 @@ def capture_new_card(camera, old_hand, player, image = image):
     for card in new_hand:
         if card not in old_hand:
             new_card = card
+        else:
+            old_hand.remove(card)
+    if new_card == '': # if there were duplicates
+        new_card = old_hand[0]
     return new_card
 
 def act_bet_low():
@@ -149,12 +153,16 @@ def act_won():
 def act_lost():
     # do some stuff if player goes bust or loses
     # throws away money?
+#    sound_file = "/home/pi/DET2019_PROJ01/hello2.wav"
     print("I lost")
     crickit.continuous_servo_2.throttle = 1.0
     crickit.continuous_servo_1.throttle = 1.0
-    time.sleep(6)
+    time.sleep(5)
     crickit.continuous_servo_2.throttle = 0.0
     crickit.continuous_servo_1.throttle = 0.0
+    
+#    pg.mixer.music.load(sound_file)
+#    pg.mixer.music.play()
     
 def act_stand():
     # tap left hand (fist) 3 times for a stand
@@ -194,8 +202,17 @@ def dealer_turn(dealer_hand):
 
 def main():
 
+    crickit.continuous_servo_2.throttle = 0.0
+    crickit.continuous_servo_1.throttle = 0.0
+    crickit.servo_3.angle = 0
+    crickit.servo_4.angle = 180
+    
     while True:
-        if crickit.touch_1.value == 0: # beginning of round indicated by a touch
+        if crickit.touch_1.value == 1: # beginning of round indicated by a touch
+            # initialize hands
+            crickit.servo_3.angle = 0
+            crickit.servo_4.angle = 180
+    
             if blackjack.best_bet() == 'high':
                 act_bet_high()
             else:
@@ -239,6 +256,8 @@ def main():
                     act_won()
                 else:
                     act_lost()
+                
+            time.sleep(5)
                 
     
 if __name__ == '__main__':
