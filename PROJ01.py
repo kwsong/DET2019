@@ -49,9 +49,9 @@ def detect_hand(image):
                   '9', '8', '7', '6', '5', '4', '3', '2']
     hand = []
 
-#    context = vision.types.ImageContext(language_hints="en-t-i0-plain")
-    response = client.text_detection(image = image)
-#    response = client.text_detection(image=image, image_context=context)
+    context = vision.types.ImageContext(language_hints="en-t-i0-plain")
+#    response = client.text_detection(image = image)
+    response = client.text_detection(image=image, image_context=context)
     texts = response.text_annotations
 
     for text in texts:
@@ -207,6 +207,7 @@ def main():
     crickit.servo_3.angle = 0
     crickit.servo_4.angle = 180
     
+    print("Ready")
     while True:
         if crickit.touch_1.value == 1: # beginning of round indicated by a touch
             # initialize hands

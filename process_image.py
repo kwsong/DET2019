@@ -19,11 +19,11 @@ def filter_image(image):
     img = cv2.imread(image, 0)
 
 #    img = cv2.fastNlMeansDenoising(img, None, 20, 7, 21)
-    img = cv2.medianBlur(img, 5)
-    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                cv2.THRESH_BINARY_INV, 7, 2)
+#    img = cv2.medianBlur(img, 5)
+#    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+#                                cv2.THRESH_BINARY_INV, 7, 2)
 
-    img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+#    img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
 
     cv2.imwrite(image, img)
 
@@ -44,7 +44,8 @@ def crop_image(image):
 
     top_bbox = (img_bbox[0], img_bbox[1], img_bbox[2], img_bbox[3] / 2)
     bottom_bbox = (img_bbox[0], img_bbox[3] / 2, img_bbox[2], img_bbox[3])
-
+#    top_bbox = (338, 78, 518, 144)
+#    bottom_bbox = (325, 292, 524, 352)
     top_img = img.crop(top_bbox)
     bottom_img = img.crop(bottom_bbox)
     top_image_name = f"{image.rsplit('.')[0]}_top.jpg"
