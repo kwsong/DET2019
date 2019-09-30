@@ -45,7 +45,7 @@ def detect_hand(image):
         [str] -- array of cards in hand
     """
 
-    validCards = ['A', 'K', 'Q', 'J', '10',
+    validCards = ['A', 'K', 'к', 'Q', 'J', '10',
                   '9', '8', '7', '6', '5', '4', '3', '2']
     hand = []
 
@@ -58,6 +58,8 @@ def detect_hand(image):
         letter = text.description
         print(letter)
         if letter in validCards:
+            if letter == 'к':
+                letter = 'K'
             hand.append(letter)
 
     return hand
@@ -141,7 +143,10 @@ def act_bet_high():
 def act_won():
     # do some stuff if player won (or if there's a standoff)
     print("I won")
-    for i in range(3):
+    sound_file = "/home/pi/DET2019_PROJ01/cheer.wav"
+    pg.mixer.music.load(sound_file)
+    pg.mixer.music.play()
+    for i in range(5):
         crickit.servo_3.angle = 90
         crickit.servo_4.angle = 180
         time.sleep(0.1)
@@ -149,17 +154,22 @@ def act_won():
         time.sleep(0.1)
         crickit.servo_4.angle = 90
         time.sleep(0.1)
+        
+    crickit.servo_3.angle = 0
+    crickit.servo_4.angle = 180
     
 def act_lost():
     # do some stuff if player goes bust or loses
     # throws away money?
-#    sound_file = "/home/pi/DET2019_PROJ01/hello2.wav"
+    sound_file = "/home/pi/DET2019_PROJ01/cry.wav"
+    pg.mixer.music.load(sound_file)
+    pg.mixer.music.play()
     print("I lost")
-    crickit.continuous_servo_2.throttle = 1.0
-    crickit.continuous_servo_1.throttle = 1.0
-    time.sleep(5)
-    crickit.continuous_servo_2.throttle = 0.0
-    crickit.continuous_servo_1.throttle = 0.0
+#    crickit.continuous_servo_2.throttle = 1.0
+#    crickit.continuous_servo_1.throttle = 1.0
+#    time.sleep(5)
+#    crickit.continuous_servo_2.throttle = 0.0
+#    crickit.continuous_servo_1.throttle = 0.0
     
 #    pg.mixer.music.load(sound_file)
 #    pg.mixer.music.play()
@@ -192,7 +202,6 @@ def dealer_turn(dealer_hand):
         time.sleep(5)
 
         new_card = capture_new_card(camera, dealer_hand, 0)
-        
         blackjack.add_dealer_card(new_card)
         dealer_hand.append(new_card)
         player_total, dealer_total = blackjack.get_totals() 
@@ -201,6 +210,8 @@ def dealer_turn(dealer_hand):
     return dealer_hand
 
 def main():
+    pg.init()
+    pg.mixer.init()
 
     crickit.continuous_servo_2.throttle = 0.0
     crickit.continuous_servo_1.throttle = 0.0
@@ -239,24 +250,25 @@ def main():
                 print("Dealer total: " + str(dealer_total))
                 
             if blackjack.did_bust(1):
-                act_lost()                
+                act_lost()
             elif blackjack.best_move() == 'stand':
                 act_stand()
             elif blackjack.best_move() == 'blackjack':
                 act_won()
                 
             # Dealer's turn
-            dealer_turn(dealer_hand)
-            if blackjack.best_move() == 'dealer_blackjack':
-                act_lost()
-            elif blackjack.did_bust(0):
-                act_won()
-            else:
-                player_total, dealer_total = blackjack.get_totals()
-                if player_total >= dealer_total:
+            if not blackjack.did_bust(1):
+                dealer_turn(dealer_hand)
+                if blackjack.best_move() == 'dealer_blackjack':
+                    act_lost()
+                elif blackjack.did_bust(0):
                     act_won()
                 else:
-                    act_lost()
+                    player_total, dealer_total = blackjack.get_totals()
+                    if player_total >= dealer_total:
+                        act_won()
+                    else:
+                        act_lost()
                 
             time.sleep(5)
                 
