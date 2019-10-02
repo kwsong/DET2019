@@ -46,7 +46,7 @@ def detect_hand(image):
     """
 
     validCards = ['A', 'K', 'к', 'Q', 'J', '10',
-                  '9', '8', '7', '6', '5', '4', '3', '2']
+                  '9', '8', '00', 'oo', '7', '6', '5', '4', '3', '2']
     hand = []
 
     context = vision.types.ImageContext(language_hints="en-t-i0-plain")
@@ -56,10 +56,11 @@ def detect_hand(image):
 
     for text in texts:
         letter = text.description
-        print(letter)
         if letter in validCards:
             if letter == 'к':
                 letter = 'K'
+            elif letter == '00' or letter == 'oo':
+                letter = '8'
             hand.append(letter)
 
     return hand
@@ -118,12 +119,14 @@ def capture_new_card(camera, old_hand, player, image = image):
             new_hand = detect_hand(vision.types.Image(content=content))
     
     for card in new_hand:
+        print(card)
         if card not in old_hand:
             new_card = card
         else:
             old_hand.remove(card)
     if new_card == '': # if there were duplicates
         new_card = old_hand[0]
+    
     return new_card
 
 def act_bet_low():
